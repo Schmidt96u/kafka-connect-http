@@ -11,21 +11,19 @@ import org.apache.kafka.connect.source.SourceRecord;
 
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
-public class ListParse implements HttpResponseParser {
+public class ListParseToRecordsParser implements HttpResponseParser {
+  private final Function<Map<String, ?>, ListParseToRecordsConfig> configFactory;
   private String path;
-  private String CONFIGURE_PATH="path";
   @Override
   public List<SourceRecord> parse(HttpResponse response) {
-    if(path.contains("[]")){
-
-    }
 
   }
-
   @Override
-  public void configure(Map<String, ?> map) {
-    path = requireString(map.get(CONFIGURE_PATH));
+  public void configure(Map<String, ?> configs) {
+    ListParseToRecordsConfig config = configFactory.apply(configs);
+    path = config.getPath();
   }
 
   public static String requireString(Object value) {
