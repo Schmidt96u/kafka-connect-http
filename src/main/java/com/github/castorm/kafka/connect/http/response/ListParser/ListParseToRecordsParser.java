@@ -22,6 +22,7 @@ package com.github.castorm.kafka.connect.http.response.ListParser;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.github.castorm.kafka.connect.http.model.HttpResponse;
 import com.github.castorm.kafka.connect.http.response.spi.HttpResponseParser;
 import lombok.RequiredArgsConstructor;
@@ -30,6 +31,7 @@ import org.apache.kafka.connect.errors.DataException;
 import org.apache.kafka.connect.source.SourceRecord;
 
 import java.io.IOException;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -46,8 +48,28 @@ public class ListParseToRecordsParser implements HttpResponseParser {
 
   @Override
   public List<SourceRecord> parse(HttpResponse response) {
-        return ( ParseList(deserialize(response.getBody())),this.path)
+        return (parseHandle(deserialize(response.getBody()),this.path));
       }
+
+  private List<SourceRecord> parseHandle(JsonNode node, String path){
+    if(node.isObject() && this.path.contains()){
+      Iterator<String> fieldNames = node.fieldNames();
+
+      while(fieldNames.hasNext()) {
+        String fieldName = fieldNames.next();
+        JsonNode fieldValue = node.get(fieldName);
+        parseHandle(fieldValue);
+      }
+    } else if(node.isArray()){
+      ArrayNode arrayNode = (ArrayNode) node;
+      for(int i = 0; i < arrayNode.size(); i++) {
+        JsonNode arrayElement = arrayNode.get(i);
+        parseHandle(arrayElement);
+      }
+    } else {
+
+    }
+  }
   @Override
   public void configure(Map<String, ?> configs) {
     ListParseToRecordsConfig config = configFactory.apply(configs);
