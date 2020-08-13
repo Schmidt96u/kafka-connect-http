@@ -48,28 +48,49 @@ public class ListParseToRecordsParser implements HttpResponseParser {
 
   @Override
   public List<SourceRecord> parse(HttpResponse response) {
-        return (parseHandle(deserialize(response.getBody()),this.path));
+        return (parseHandle(deserialize(response.getBody()),this.path,this.path.split("\\[\\]").length-1));
       }
 
-  private List<SourceRecord> parseHandle(JsonNode node, String path){
-    if(node.isObject() && this.path.contains()){
-      Iterator<String> fieldNames = node.fieldNames();
+  private List<SourceRecord> parseHandle(JsonNode node, String path,Integer level) {
+    if (level == 0) {
+      if (node.isObject()) {
+        Iterator<String> fieldNames = node.fieldNames();
 
-      while(fieldNames.hasNext()) {
-        String fieldName = fieldNames.next();
-        JsonNode fieldValue = node.get(fieldName);
-        parseHandle(fieldValue);
-      }
-    } else if(node.isArray()){
-      ArrayNode arrayNode = (ArrayNode) node;
-      for(int i = 0; i < arrayNode.size(); i++) {
-        JsonNode arrayElement = arrayNode.get(i);
-        parseHandle(arrayElement);
+        while (fieldNames.hasNext()) {
+          String fieldName = fieldNames.next();
+          JsonNode fieldValue = node.get(fieldName);
+          parseHandle(fieldValue);
+        }
+      } else if (node.isArray()) {
+        ArrayNode arrayNode = (ArrayNode) node;
+        for (int i = 0; i < arrayNode.size(); i++) {
+          JsonNode arrayElement = arrayNode.get(i);
+          parseHandle(arrayElement);
+        }
+      } else {
+
       }
     } else {
+      if (node.isObject() &&) {
+        Iterator<String> fieldNames = node.fieldNames();
 
+        while (fieldNames.hasNext()) {
+          String fieldName = fieldNames.next();
+          JsonNode fieldValue = node.get(fieldName);
+          parseHandle(fieldValue);
+        }
+      } else if (node.isArray()) {
+        ArrayNode arrayNode = (ArrayNode) node;
+        for (int i = 0; i < arrayNode.size(); i++) {
+          JsonNode arrayElement = arrayNode.get(i);
+          parseHandle(arrayElement);
+        }
+      } else {
+
+      }
     }
   }
+
   @Override
   public void configure(Map<String, ?> configs) {
     ListParseToRecordsConfig config = configFactory.apply(configs);
