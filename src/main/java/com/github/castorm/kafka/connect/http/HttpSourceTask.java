@@ -63,6 +63,7 @@ public class HttpSourceTask extends SourceTask {
 
     private SourceRecordFilterFactory recordFilterFactory;
 
+    private Boolean getSubList;
     @Getter
     private Offset offset;
 

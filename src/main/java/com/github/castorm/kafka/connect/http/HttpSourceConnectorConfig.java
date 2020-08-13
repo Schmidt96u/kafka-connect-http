@@ -39,10 +39,8 @@ import org.apache.kafka.common.config.ConfigDef;
 import java.util.Map;
 
 import static com.github.castorm.kafka.connect.common.ConfigUtils.breakDownMap;
-import static org.apache.kafka.common.config.ConfigDef.Importance.HIGH;
-import static org.apache.kafka.common.config.ConfigDef.Importance.LOW;
-import static org.apache.kafka.common.config.ConfigDef.Type.CLASS;
-import static org.apache.kafka.common.config.ConfigDef.Type.STRING;
+import static org.apache.kafka.common.config.ConfigDef.Importance.*;
+import static org.apache.kafka.common.config.ConfigDef.Type.*;
 
 @Getter
 class HttpSourceConnectorConfig extends AbstractConfig {
@@ -54,6 +52,9 @@ class HttpSourceConnectorConfig extends AbstractConfig {
     private static final String RECORD_SORTER = "http.record.sorter";
     private static final String RECORD_FILTER_FACTORY = "http.record.filter.factory";
     private static final String OFFSET_INITIAL = "http.offset.initial";
+    private static final String PATH_TO_WORK="http.path.work";
+    private static final String SUB_LIST_MESSAGES="http.sub.list";
+
 
     private final Throttler throttler;
     private final HttpRequestFactory requestFactory;
@@ -82,6 +83,8 @@ class HttpSourceConnectorConfig extends AbstractConfig {
                 .define(RESPONSE_PARSER, CLASS, PolicyHttpResponseParser.class, HIGH, "Response Parser Class")
                 .define(RECORD_SORTER, CLASS, OrderDirectionSourceRecordSorter.class, LOW, "Record Sorter Class")
                 .define(RECORD_FILTER_FACTORY, CLASS, OffsetRecordFilterFactory.class, LOW, "Record Filter Factory Class")
-                .define(OFFSET_INITIAL, STRING, "", HIGH, "Starting offset");
+                .define(OFFSET_INITIAL, STRING, "", HIGH, "Starting offset")
+                .define(PATH_TO_WORK,STRING,"",MEDIUM,"look for sub part in a JSON")
+                .define(SUB_LIST_MESSAGES,BOOLEAN,false,MEDIUM,"Sub divised record according to list");
     }
 }
