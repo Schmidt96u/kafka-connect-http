@@ -52,8 +52,7 @@ class HttpSourceConnectorConfig extends AbstractConfig {
     private static final String RECORD_SORTER = "http.record.sorter";
     private static final String RECORD_FILTER_FACTORY = "http.record.filter.factory";
     private static final String OFFSET_INITIAL = "http.offset.initial";
-    private static final String PATH_TO_WORK="http.path.work";
-    private static final String SUB_LIST_MESSAGES="http.sub.list";
+
 
 
     private final Throttler throttler;
@@ -84,7 +83,6 @@ class HttpSourceConnectorConfig extends AbstractConfig {
                 .define(RECORD_SORTER, CLASS, OrderDirectionSourceRecordSorter.class, LOW, "Record Sorter Class")
                 .define(RECORD_FILTER_FACTORY, CLASS, OffsetRecordFilterFactory.class, LOW, "Record Filter Factory Class")
                 .define(OFFSET_INITIAL, STRING, "", HIGH, "Starting offset")
-                .define(PATH_TO_WORK,STRING,"",MEDIUM,"look for sub part in a JSON")
-                .define(SUB_LIST_MESSAGES,BOOLEAN,false,MEDIUM,"Sub divised record according to list");
+
     }
 }

@@ -19,7 +19,6 @@ package com.github.castorm.kafka.connect.http.response.ListParser;
  * limitations under the License.
  * #L%
  */
-
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -30,11 +29,12 @@ import lombok.SneakyThrows;
 import org.apache.kafka.connect.errors.DataException;
 import org.apache.kafka.connect.source.SourceRecord;
 
+import javax.xml.transform.Source;
 import java.io.IOException;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Function;
+
+import static org.apache.commons.lang.SerializationUtils.deserialize;
 
 @RequiredArgsConstructor
 public class ListParseToRecordsParser implements HttpResponseParser {
@@ -48,48 +48,40 @@ public class ListParseToRecordsParser implements HttpResponseParser {
 
   @Override
   public List<SourceRecord> parse(HttpResponse response) {
-        return (parseHandle(deserialize(response.getBody()),this.path,this.path.split("\\[\\]").length-1));
+        return (parseHandle(deserialize(response.getBody()), new ArrayList<String>(Arrays.asList(this.path.split(".")))));
       }
 
-  private List<SourceRecord> parseHandle(JsonNode node, String path,Integer level) {
-    if (level == 0) {
-      if (node.isObject()) {
-        Iterator<String> fieldNames = node.fieldNames();
+  private List<SourceRecord> parseHandle(JsonNode node, ArrayList<String> paths) {
+      int n = 0;
+      String subPath ="/";
+      ArrayList<SourceRecord> sourceRecords = new ArrayList<>();
+      while(!subPath.endsWith("[]") && n < paths.size()){
+       subPath = subPath.concat(paths.get(n));
+       n++;
+      }
 
-        while (fieldNames.hasNext()) {
-          String fieldName = fieldNames.next();
-          JsonNode fieldValue = node.get(fieldName);
-          parseHandle(fieldValue);
+      if (n == paths.size()) {
+        if (subPath.endsWith("[]")) {
+          ArrayNode arrayNode = (ArrayNode) node;
+          for (int i = 0; i < arrayNode.size(); i++) {
+            JsonNode arrayElement = arrayNode.get(i);
+            sourceRecords.add(new SourceRecord(arrayElement)));
+          }
         }
-      } else if (node.isArray()) {
+          else if(!subPath.contains("[]")){
+            JsonNode nodeObject = node.at(subPath);
+            return new SourceRecord(/*have to findout how i'm gonna do that ... */);
+          }
+      }
+      else if(subPath.endsWith("[]")){
         ArrayNode arrayNode = (ArrayNode) node;
         for (int i = 0; i < arrayNode.size(); i++) {
           JsonNode arrayElement = arrayNode.get(i);
-          parseHandle(arrayElement);
-        }
-      } else {
-
-      }
-    } else {
-      if (node.isObject() &&) {
-        Iterator<String> fieldNames = node.fieldNames();
-
-        while (fieldNames.hasNext()) {
-          String fieldName = fieldNames.next();
-          JsonNode fieldValue = node.get(fieldName);
-          parseHandle(fieldValue);
-        }
-      } else if (node.isArray()) {
-        ArrayNode arrayNode = (ArrayNode) node;
-        for (int i = 0; i < arrayNode.size(); i++) {
-          JsonNode arrayElement = arrayNode.get(i);
-          parseHandle(arrayElement);
-        }
-      } else {
-
-      }
-    }
+          sourceRecords.addAll(parseHandle(arrayElement, (ArrayList<String>) paths.subList(n,paths.size()-1)));
+      } }
+    return sourceRecords;
   }
+
 
   @Override
   public void configure(Map<String, ?> configs) {
